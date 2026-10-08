@@ -14,6 +14,8 @@
 #define setCursorIncio "\033[H"
 #define esconderCursor "\033[?25l"
 #define mostrarCursor "\033[?25h"
+#define margem_x 4
+#define margem_y 3
 #define largura 40
 #define altura 20
 #define minas 20
@@ -27,6 +29,28 @@ typedef struct tabuleiro
 } tabuleiro;
 
 tabuleiro Campo[altura][largura];
+
+void posicionarCursor(int x,int y){
+    printf("\033[%d;%dH", x, y);
+}
+
+void criarNotacao(){
+    posicionarCursor(1, margem_x);
+    for (int i = 0; i < largura; i++){
+        if (i % 10 == 0) printf("%-2d", i / 10);
+        else             printf("  ");
+    }
+    posicionarCursor(2, margem_x);
+    for (int i = 0; i < largura; i++){
+        printf("%-2d", i % 10);
+    }
+    for (int i = 0; i < altura; i++){
+        posicionarCursor(margem_y + i, 1);
+        printf("%2d", i);
+    }
+}
+
+
 void criarCampo()
 {
     for (int y = 0; y < altura; y++)
@@ -58,19 +82,21 @@ void criarCampo()
         }
     }
 }
-
 void printarCampo()
 {
     int idx = 0;
-    idx += sprintf(idx + buffer, "%s", setCursorIncio);
+    posicionarCursor(margem_x+1,margem_y+1);
     for (int y = 0; y < altura; y++)
     {
+        idx += sprintf(idx + buffer, "\033[%d;%dH", margem_y + y, margem_x);
         for (int x = 0; x < largura; x++)
         {
             idx += sprintf(idx + buffer, "%s", Campo[y][x].bg);
         }
-        idx += sprintf(buffer + idx, "\x1b[0m\n");
-    }
+         idx += sprintf(buffer + idx, "\x1b[0m");
+
+}
+    buffer[idx] = '\0';
     fputs(buffer, stdout);
 }
 void plantarMinas()
@@ -101,14 +127,17 @@ void plantarMinas()
 }
 int main()
 {
+    SetConsoleOutputCP(65001);
     int seed;
     minasnotabuleiro = 0;
     printf("Digite uma seed");
     scanf("%d", &seed);
     srand(seed);
-    fflush(stdin);
+    system("cls");
     plantarMinas();
+    criarNotacao();
     criarCampo();
     printarCampo();
+    posicionarCursor(altura + 5, 1);
     printf("%d", minasnotabuleiro);
 }
